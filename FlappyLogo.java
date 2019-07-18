@@ -18,6 +18,7 @@ public class FlappyLogo extends ApplicationAdapter {
 
 	SpriteBatch batch;
 	Texture background;
+	Texture gameover;
 	Circle birdCircle;
 	Rectangle tubeRectangle[];
 	ShapeRenderer shapeRenderer;
@@ -32,7 +33,7 @@ public class FlappyLogo extends ApplicationAdapter {
 	float velocity = 0;
 
 	float distanceBtwTubes;
-    int numberOfTubes = 4;
+    int numberOfTubes = 5;
     float tubeX[] = new float[numberOfTubes];
 	float tubeY[] = new float[numberOfTubes];
 	float gap = 400;
@@ -44,6 +45,7 @@ public class FlappyLogo extends ApplicationAdapter {
 	BitmapFont font;
 	BitmapFont font2;
 	int bonus = 0;
+	BitmapFont font3;
 
 
 
@@ -51,13 +53,14 @@ public class FlappyLogo extends ApplicationAdapter {
 	public void create () {
 		batch = new SpriteBatch();
 		background = new Texture("flappy_background.jpg");
+		gameover = new Texture("gameover2.png");
 		birds = new Texture[2];
-		birds[0] = new Texture("flappy_5_2.jpg");
-		birds[1] = new Texture("flappy_3_2.png");
+		birds[0] = new Texture("bird.png");
+		birds[1] = new Texture("bird2.png");
 		birdY = Gdx.graphics.getHeight()/2-birds[flappyState].getHeight()/2;
 
-		topTube = new Texture("flappy_pipedown2.png");
-		bottomTube = new Texture("flappy_pipeup2.png");
+		topTube = new Texture("toptube.png");
+		bottomTube = new Texture("bottomtube.png");
 		distanceBtwTubes = Gdx.graphics.getWidth()*3/4;
 		randomGenerator = new Random();
 
@@ -78,6 +81,8 @@ public class FlappyLogo extends ApplicationAdapter {
 
 		font = new BitmapFont();
 		font2 = new BitmapFont();
+		font3 = new BitmapFont();
+
 
 	}
 
@@ -108,19 +113,24 @@ public class FlappyLogo extends ApplicationAdapter {
 //				shapeRenderer.rect(tubeRectangle[j].x, tubeRectangle[j].y, tubeRectangle[j].width, tubeRectangle[j].height);
 //				shapeRenderer.rect(tubeRectangle[j+1].x, tubeRectangle[j+1].y, tubeRectangle[j+1].width, tubeRectangle[j+1].height);
 
-				if(Intersector.overlaps(birdCircle, tubeRectangle[j]) || Intersector.overlaps(birdCircle, tubeRectangle[j+1]) )
-				{
-					Gdx.app.log("Collision", "Collided!");
-				}
+
                // tubeY[i] = (randomGenerator.nextFloat() - 0.5f) * (Gdx.graphics.getHeight() - gap - 200); //code is different for it from the video lecture.
                 tubeX[i] = tubeX[i] - tubeVelocity; //code is different for it from the video lecture.
 
+				if(Intersector.overlaps(birdCircle, tubeRectangle[j]) || Intersector.overlaps(birdCircle, tubeRectangle[j+1]) )
+				{
+					Gdx.app.log("Collision", "Collided!");
+					gameState = 2;
+
+				}
 
 				if(tubeX[i] < - bottomTube.getWidth())
                 {
-                    tubeX[i] = distanceBtwTubes * numberOfTubes;
+                    tubeX[i] = distanceBtwTubes * numberOfTubes + (Gdx.graphics.getWidth()*3/8); //added the last term as a modification for my Bonus round flying birds.
 					tubeY[i] = (randomGenerator.nextFloat() - 0.5f) * (Gdx.graphics.getHeight() - gap - 200);
 				}
+
+
 				else if(tubeX[presentTube] < Gdx.graphics.getWidth()/2 - bottomTube.getWidth()/2)
 				{
 					score += 1;
@@ -140,17 +150,23 @@ public class FlappyLogo extends ApplicationAdapter {
 
 			if(Gdx.input.justTouched())
 			{
-				velocity = -40;
+				velocity = -30;
 			}
 
-			if(birdY > 0 ||velocity < 0)
+			if(birdY > 0 )
 			{
                 velocity = velocity + gravity;
                 birdY = birdY - velocity;
+
+                if(birdY < 0 || birdY > Gdx.graphics.getHeight()- birds[flappyState].getHeight() )
+				{
+					gameState = 2;
+				}
+
             }
 		}
 
-		else
+		else if (gameState == 0)
 		{
 			if(Gdx.input.justTouched())
 			{
@@ -158,14 +174,53 @@ public class FlappyLogo extends ApplicationAdapter {
 			}
 		}
 
+		if(gameState == 2)
+		{
+			batch.draw(gameover, Gdx.graphics.getWidth()/2 - gameover.getWidth()/2, Gdx.graphics.getHeight()/2 - gameover.getHeight()/2 );
+			font.setColor(Color.RED);
+			font.getData().setScale(5);
+			font.draw(batch, "Total : "+ Integer.toString(score+bonus), 410, 840);
 
-		if(flappyState == 1)
-		{
-			flappyState = 0;
+			while(birdY > 0)
+			{
+				velocity = velocity + gravity;
+				birdY = birdY - velocity;
+			}
+
+			if(Gdx.input.justTouched())
+			{
+				gameState = 1;
+				score = 0;
+				presentTube = 0;
+				bonus = 0;
+				velocity = 0;
+
+				birdY = Gdx.graphics.getHeight()/2-birds[flappyState].getHeight()/2;
+
+				for(int i = 0; i<= numberOfTubes-1; i++)
+				{
+					tubeX[i] = Gdx.graphics.getWidth() / 2 - topTube.getWidth() / 2 + (i * distanceBtwTubes) + Gdx.graphics.getWidth()/2;
+					tubeY[i] = (randomGenerator.nextFloat()-0.5f)*(Gdx.graphics.getHeight()-gap-200);
+
+					int j = i*2;
+					tubeRectangle[j] = new Rectangle();
+					tubeRectangle[j+1] = new Rectangle();
+				}
+
+
+			}
 		}
-		else
+
+		if(gameState != 2)
 		{
-			flappyState = 1;
+			if (flappyState == 1)
+			{
+				flappyState = 0;
+			}
+			else
+			{
+				flappyState = 1;
+			}
 		}
 
 
@@ -178,10 +233,10 @@ public class FlappyLogo extends ApplicationAdapter {
 
 		font.setColor(Color.BLACK);
 		font.getData().setScale(5);
-		font.draw(batch, "Score: "+ Integer.toString(score), 80, 200);
+		font.draw(batch, "Score : "+ Integer.toString(score), 80, 200);
 		font.setColor(Color.BLACK);
 		font.getData().setScale(5);
-		font.draw(batch, "Bonus: "+ Integer.toString(bonus), 80, 120);
+		font.draw(batch, "Bonus : "+ Integer.toString(bonus), 80, 120);
 		batch.end();
 
 		birdCircle.set(Gdx.graphics.getWidth()/2, birdY + birds[flappyState].getHeight()/2, birds[flappyState].getHeight()/2 );
