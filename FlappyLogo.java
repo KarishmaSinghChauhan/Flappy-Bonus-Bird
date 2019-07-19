@@ -352,6 +352,7 @@ public class FlappyLogo extends ApplicationAdapter {
 				bonusPoints = bonusPointsOrig;
                 extraVelocity = 6;
                 extraMultiply = 50;
+                tubeVelocity = 4;
 
 
 				birdY = Gdx.graphics.getHeight()/2-birds[flappyState].getHeight()/2;
