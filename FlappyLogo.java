@@ -12,6 +12,9 @@ import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.PriorityQueue;
 import java.util.Random;
 
 public class FlappyLogo extends ApplicationAdapter {
@@ -47,12 +50,17 @@ public class FlappyLogo extends ApplicationAdapter {
 	BitmapFont font;
 	BitmapFont font2;
 	int bonus = 0;
+	int bonusPointsOrig = 2;
+	int bonusPoints = bonusPointsOrig;
 	BitmapFont font3;
 
 	float extraBirdY;
 	float extraBirdX;
 	float extraVelocity = 6;
 	float extraMultiply = 50;
+
+	//PriorityQueue<Integer> highScore = new PriorityQueue<Integer>(Collections.reverseOrder());
+	ArrayList<Integer> highScore = new ArrayList<Integer>();
 
 
 
@@ -92,7 +100,7 @@ public class FlappyLogo extends ApplicationAdapter {
 		font2 = new BitmapFont();
 		font3 = new BitmapFont();
 
-		extraBird = new Texture("extra bird 4.jpg");
+		extraBird = new Texture("extra bird 6.jpg");
 		extraBirdY = randomGenerator.nextFloat() * (Gdx.graphics.getHeight() - extraBird.getHeight());
 		extraBirdX = Gdx.graphics.getWidth() ;
 
@@ -132,7 +140,8 @@ public class FlappyLogo extends ApplicationAdapter {
 				{
 					Gdx.app.log("Collision", "Collided!");
 					////////////////////////////////////////////////////////////////////////////////
-					//gameState = 2;
+					gameState = 2;
+					highScore.add(score+bonus);
 					////////////////////////////////////////////////////////////////////////////////
 
 				}
@@ -240,6 +249,7 @@ public class FlappyLogo extends ApplicationAdapter {
 				{
 				    ////////////////////////////////////////////////////////////////////////////////
 					gameState = 2;
+					highScore.add(score+bonus);
 					////////////////////////////////////////////////////////////////////////////////
 				}
 
@@ -256,8 +266,8 @@ public class FlappyLogo extends ApplicationAdapter {
 
 		if(gameState == 3)
 		{
-			batch.draw(extraBird, extraBirdX, extraBirdY, 140, 120);
-			extraBirdCircle.set(extraBirdX + 140/2, extraBirdY + 120/2, 120/2 );
+			batch.draw(extraBird, extraBirdX, extraBirdY, 140, 140);
+			extraBirdCircle.set(extraBirdX + 140/2, extraBirdY + 140/2, 140/2 );
 			//shapeRenderer.circle(extraBirdCircle.x, extraBirdCircle.y, extraBirdCircle.radius);
 
 
@@ -284,8 +294,13 @@ public class FlappyLogo extends ApplicationAdapter {
 				if(Intersector.overlaps(extraBirdCircle, birdCircle))
 				{
 					Gdx.app.log("Bonus", "Scored!");
-					bonus += 2;
+					bonus += bonusPoints;
+					bonusPoints += 2;
 
+				}
+				else
+				{
+					bonusPoints = bonusPointsOrig;
 				}
 
 				gameState = 1;
@@ -302,10 +317,24 @@ public class FlappyLogo extends ApplicationAdapter {
 
 		if(gameState == 2)
 		{
-			batch.draw(gameover, Gdx.graphics.getWidth()/2 - gameover.getWidth()/2 -155, Gdx.graphics.getHeight()/2 - gameover.getHeight()/2 , Gdx.graphics.getWidth()*3/4, 300);
+			batch.draw(gameover, Gdx.graphics.getWidth()/2 - gameover.getWidth()/2 -160, Gdx.graphics.getHeight()/2 - gameover.getHeight()/2 , Gdx.graphics.getWidth()*3/4, 300);
+
+			int highest = highScore.get(0);
+			for(int i = 0; i<= highScore.size()-1;i++)
+			{
+				if(highScore.get(i) > highest)
+				{
+					highest = highScore.get(i);
+				}
+			}
+
 			font.setColor(Color.RED);
 			font.getData().setScale(5);
-			font.draw(batch, "Total : "+ Integer.toString(score+bonus), 410, 840);
+			font.draw(batch, "Final Score : "+ Integer.toString(score+bonus), 325, 840);
+
+			font.setColor(Color.RED);
+			font.getData().setScale(5);
+			font.draw(batch, "High Score : "+ Integer.toString(highest), 325, 740);
 
 			while(birdY > 0)
 			{
@@ -320,6 +349,10 @@ public class FlappyLogo extends ApplicationAdapter {
 				presentTube = 0;
 				bonus = 0;
 				velocity = 0;
+				bonusPoints = bonusPointsOrig;
+                extraVelocity = 6;
+                extraMultiply = 50;
+
 
 				birdY = Gdx.graphics.getHeight()/2-birds[flappyState].getHeight()/2;
 
