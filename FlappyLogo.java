@@ -55,8 +55,8 @@ public class FlappyLogo extends ApplicationAdapter {
 	float extraVelocity = 6;
 	float extraMultiply = 50;
 
-	//PriorityQueue<Integer> highScore = new PriorityQueue<Integer>(Collections.reverseOrder());
-//	ArrayList<Integer> highScore = new ArrayList<Integer>();
+//	PriorityQueue<Integer> highScore = new PriorityQueue<Integer>(Collections.reverseOrder());
+	ArrayList<Integer> highScore = new ArrayList<Integer>();
 
 
 	@Override
